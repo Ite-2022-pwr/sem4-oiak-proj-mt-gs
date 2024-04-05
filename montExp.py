@@ -1,13 +1,41 @@
 # most of the below code is created from:
 #https://link-1springer-1com-19pdzi9l600b7.han.bg.pwr.edu.pl/content/pdf/10.1007/978-1-4419-5906-5_38.pdf?pdf=core
-
+x, y = 0, 1
+def gcdExtended(a, b):
+    global x, y
+    
+ 
+    # Base Case
+    if (a == 0):
+        x = 0
+        y = 1
+        return b
+ 
+    # To store results of recursive call
+    gcd = gcdExtended(b % a, a)
+    x1 = x
+    y1 = y
+ 
+    # Update x and y using results of recursive
+    # call
+    x = y1 - (b // a) * x1
+    y = x1
+ 
+    return gcd
+ 
  
 def modInverse(A, M):
  
-    for X in range(1, M):
-        if (((A % M) * (X % M)) % M == 1):
-            return X
-    return -1
+    g = gcdExtended(A, M)
+    if (g != 1):
+        print("Inverse doesn't exist")
+ 
+    else:
+ 
+        # m is added to handle negative x
+        res = (x % M + M) % M
+        return res
+
 
 
 # This is a naive way 
@@ -20,7 +48,7 @@ def MonProNaive(ap, bp, n, r, np):
     return u
 
 
-def MonProBitWise(a, b, n, r, k):
+def MonProBitWise(a, b, n, k):
     a = bin(a)[2:] # convert to binary, because we will want to access specific bits
     u = 0
     for i in range(k):
@@ -56,11 +84,11 @@ def PrepareMontgomery(n):
 
 
 def MonMul(a, b, n):
-    k, r, np = PrepareMontgomery(n)
+    k, r, _= PrepareMontgomery(n)
     ap = a * r % n # because MonPro uses ab and bp not a and b
 
     # u = MonProNaive(ap, b, n, r, np)
-    u = MonProBitWise(ap, b, n, r, k)
+    u = MonProBitWise(ap, b, n,k)
     return u
 
 
@@ -80,4 +108,4 @@ def MonExp(a,e,n): # a^e mod n
  
 if __name__ == "__main__":
     # print(MonExp(7, 10, 13)) # 7^10 mod 13 = 4
-    print(MonExp(7, 10, 13)) # 7^10 mod 13 = 4
+    print(MonExp(1023, 10, 13)) # 7^10 mod 13 = 4

@@ -32,6 +32,14 @@ def MonProBitWise(a, b, n, r, k):
     return u
 
 
+def MonProWordWise(a, b, n, r, s, w):
+    a = bin(a)[2:] # convert to binary, because we will want to access specific bits
+    u = 0
+    for i in range(s-1):
+        u = u + int(a[i]) * b
+        # we have to calc -n_0^-1
+
+
 
 
 def PrepareMontgomery(n):
@@ -44,6 +52,8 @@ def PrepareMontgomery(n):
     r_inv = modInverse(r, n) 
     np = -(1 - r * r_inv) // n # this is the value of np
     return k, r, np
+
+
 
 def MonMul(a, b, n):
     k, r, np = PrepareMontgomery(n)
@@ -69,10 +79,5 @@ def MonExp(a,e,n): # a^e mod n
 
  
 if __name__ == "__main__":
-    A =  16 # this is the number for which we want to find the modular inverse
-    M = 13  # this is the modulo value
- 
-    print(modInverse(A, M))
-    #Before calling MonExp / MonPro, we have to compute np and r 
-
-    print(MonExp(7, 10, 13)) #
+    # print(MonExp(7, 10, 13)) # 7^10 mod 13 = 4
+    print(MonExp(7, 10, 13)) # 7^10 mod 13 = 4

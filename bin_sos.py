@@ -66,7 +66,6 @@ def MonExp(a,e,n): # a^e mod n
     print(sos(3,3,n))
 
 def addc(a,b,c=0):
-    c=0
     ab = a+b+c
 
     if ab >= 2:
@@ -78,13 +77,20 @@ def addc(a,b,c=0):
     return c,ab
 
 
-def PropagateCarry(t, start, c):
-    for i in range(start,len(t),1):
-        sum,c = addc(int(t[-1-i]),0,int(c))
-        t[-1-i] = sum
-        if c == 0:
-            break
-    return t
+# def PropagateCarry(t, start, c):
+#     for i in range(start,len(t),1):
+#         sum,c = addc(int(t[-1-i]),0,int(c))
+#         t[-1-i] = sum
+#         if c == 0:
+#             break
+#     return t
+def propagate_carry(bits, start, carry):
+    i = start
+    while carry > 0 and i < len(bits):
+        carry, bits[-1-i] = addc(bits[-1-i], carry, 0)
+        i += 1
+    return bits
+
 
 
 
@@ -92,7 +98,7 @@ def PropagateCarry(t, start, c):
 def sos(ap,bp,n, w=1):
     k, r, np = PrepareMontgomery(n)
     np = bin(np)[2:]
-    n_arr = bin(n)[2:]
+    n_bin = bin(n)[2:]
     #convert a and b to binary
     a_bin = bin(ap)[2:]
     b_bin = bin(bp)[2:]
@@ -105,45 +111,54 @@ def sos(ap,bp,n, w=1):
 
     #initialize t to 0
     t = [0]*(2*s+1)
-
+    u=t.copy()
     #Step 1. Compute t = a*b
 
     for i in range(s):
         carry =  0
         for j in range (s):
+            print(t[-1-(i+j)],a_bin[-1-j],b_bin[-1-i],carry)
             carry,sum = addc(int(t[-1-(i+j)]) , int(a_bin[-1-j])*int(b_bin[-1-i]) ,carry)
+            print(t[-1-(i+j)],a_bin[-1-j],b_bin[-1-i],carry,sum)
             t[-1-(i+j)] = sum
-            t[-2-(i+j)]=carry
+        t[-1-(i+s)]=carry
     print(t)
     # Lovely, t is computed correctly and stored as an array of bits
     # now we have to calc u = (t+mn)/r
     # first we take u=t, then we are adding mn to it and then divide by r = 2^sw (our w is 1, because we are doing bit by bit, not word by word)
     
-    u = t.copy() # We have to make a deep copy, so modifiyig u does not change t
 
     # Step 2. Compute u = (t + mn)/r
-    # 2.1 u = t + mn    
+    # 2.1 t = t + mn    
     for i in range(s):
         carry = 0
         m = (int(t[-1-i])*int(np[-1])) % (2 ** w)
         for j in range(s):
-            carry,sum = addc(int(t[-1-(i+j)]),int(m)*int(n_arr[-1-j]),carry)
+            print(t[-1-(i+j)],m,n_bin[-1-j],carry)
+            carry,sum = addc(int(t[-1-(i+j)]),int(m)*int(n_bin[-1-j]),carry)
             t[-1-(i+j)] = sum
-        PropagateCarry(t,i+s,carry) # this does not work ;/// I do not know how to propagate carry correctly
+        # PropagateCarry(t,i+s,carry) # this does not work ;/// I do not know how to propagate carry correctly
+            # t = propagate_carry(t, 1+i+j, carry)
+        t = propagate_carry(t, i+s, carry)
+        
     print(t)
+
+    # u = t.copy() # We have to make a deep copy, so modifiyig u does not change t
 
     # 2.2 u = u/r , so we just ignore lower s words of t
 
     for j in range(s+1):
         u[-1-j] = t[-1-(j+s)]
+    # u >> s
     print(u)
         
     # Step 3. The multi-precision subtraction in Step 3 of MonPro is then performed to reduce u if necessary
     # But I still do not know how to do it correctly
+    # TODO: Till now it is good (at least for 3^11 mod 13)
 
     borrow=0
     for i in range (s):
-        borrow, diff = subc(u[-1-i],int(n_arr[-1-i]),borrow)
+        borrow, diff = subc(u[-1-i],int(n_bin[-1-i]),borrow)
         t[-1-i] = diff
     borrow, diff = subc(u[-1-s],0,borrow)
     t[-1-s] = diff
@@ -176,4 +191,4 @@ def subc(x, y, borrow):
 
 
 if __name__ == "__main__":
-    MonExp(7,10,13)
+    MonExp(8,11,13)

@@ -29,7 +29,8 @@ def modInverse(A, M):
     g = gcdExtended(A, M)
     if (g != 1):
         print("Inverse doesn't exist")
- 
+        return 0
+
     else:
  
         # m is added to handle negative x
@@ -41,32 +42,47 @@ def modInverse(A, M):
 # This is a naive way 
 def MonProNaive(ap, bp, n, r, np):
     t = ap * bp # we still have to comput np and r
+    print ('t = ',t,' = ',ap,' * ',bp)
     m = t * np % r
+    print('m = ',m,' = ', t,' * ',np,' % ',r)
     u = (t + m * n) // r
+    print('u = ',u,' = ',t,' + ', m,' * ',n,' // ',r)
     if u >= n:
+        print('t: ',t,'m: ',m,'u: ',u,'n: ',n,'ap: ',ap,'bp: ',bp)
         return u - n
+    print('t: ',t,'m: ',m,'u: ',u,'n: ',n,'ap: ',ap,'bp: ',bp)
     return u
 
 
-def MonProBitWise(a, b, n, k):
-    a = bin(a)[2:] # convert to binary, because we will want to access specific bits
-    u = 0
-    for i in range(k):
-        u = u + int(a[i]) * b
-        u = u + bin(u)[2:][0] * n
-        u = u >> 1
-    if u >= n:
-        return u - n
-    return u
+# def MonProBitWise(a, b, n, k):
+#     a = bin(a)[2:] # convert to binary, because we will want to access specific bits
+#     u = 0
+#     for i in range(k-1):
+#         u = u + int(a[i]) * b
+#         u = u + int(bin(u)[2:][0]) * n
+#         u = u >> 1
+#     if u >= n:
+#         return u - n
+#     return u
 
 
-def MonProWordWise(a, b, n, r, s, w):
+# def MonProWordWise(a, b, n, r, s, w = 32): # assume our word is 32 by default
     a = bin(a)[2:] # convert to binary, because we will want to access specific bits
     u = 0
+    #calculate -n_0^-1
+    n_0 = bin(n)[2:][-w:] # get the last bit // this may actually be wrong XD
+    n_0_inv = modInverse(int(n_0, 2), 2 ** w) * (-1) # we have to compute -n_0^-1
+
+    print(s,w)
     for i in range(s-1):
         u = u + int(a[i]) * b
         # we have to calc -n_0^-1
+        u = u + n_0_inv * int(bin(u)[2:][0]) * n
+        u = u >> w
 
+    if u >= n:
+        return u - n
+    return u
 
 
 
@@ -93,7 +109,22 @@ def MonMul(a, b, n):
 
 
 
-def MonExp(a,e,n): # a^e mod n
+# def MonExpByWord(a,e,n, w): # a^e mod n
+    k, r, np = PrepareMontgomery(n)
+    s = k // w
+    ap = (a * r) % n
+    up = (1 * r) % n
+    for i in range(k-1, -1, -1):
+        up = MonProWordWise(up, up, n, r, s, w)
+        if (e >> i) & 1: # if e_i is 1
+            up = MonProWordWise(up, ap, n, r, s, w)
+    u = MonProWordWise(up, 1, n, r, s,w)
+    return u
+
+
+
+
+def MonExpNaive(a,e,n): # a^e mod n
     k, r, np = PrepareMontgomery(n)
     ap = (a * r) % n
     up = (1 * r) % n
@@ -105,7 +136,18 @@ def MonExp(a,e,n): # a^e mod n
     return u
 
 
+# def MonExpBit(a,e,n): # a^e mod n
+    k, r, np = PrepareMontgomery(n)
+    ap = (a * r) % n
+    up = (1 * r) % n
+    for i in range(k-1, -1, -1):
+        up = MonProBitWise(up, up, n, k)
+        if (e >> i) & 1: # if e_i is 1
+            up = MonProBitWise(up, ap, n,k)
+    u = MonProBitWise(up, 1, n, k)
+    return uws
+
+
  
 if __name__ == "__main__":
-    # print(MonExp(7, 10, 13)) # 7^10 mod 13 = 4
-    print(MonExp(1023, 10, 13)) # 7^10 mod 13 = 4
+    print(MonExpNaive(8, 11, 13)) # 7^10 mod 13 = 4

@@ -59,11 +59,21 @@ def PropagateCarry(t, start, c):
     return t
 
 
-def MonExp(a,e,n): # a^e mod n
-    # ap = (a * r) % n
-    # up = (1 * r) % n
-    # print(ap,up)
-    print(sos(3,3,n))
+def MonExp(a,e,n,w=1): # a^e mod n
+    k, r, np = PrepareMontgomery(n)
+    s = k // w
+    ap = (a * r) % n
+    ap = bin(ap)[2:].zfill(s)
+    up = (1 * r) % n
+    up = bin(up)[2:].zfill(s)
+    for i in range(k-1, -1, -1):
+        up = sos(up, up, n)
+        if (e >> i) & 1: # if e_i is 1
+            up = sos(up, ap, n,)
+    tab_1 = [0]*s
+    tab_1[-1] = 1
+    u = sos(up, tab_1, n)
+    return u
 
 def addc(a,b,c=0):
     ab = a+b+c
@@ -77,13 +87,6 @@ def addc(a,b,c=0):
     return c,ab
 
 
-# def PropagateCarry(t, start, c):
-#     for i in range(start,len(t),1):
-#         sum,c = addc(int(t[-1-i]),0,int(c))
-#         t[-1-i] = sum
-#         if c == 0:
-#             break
-#     return t
 def propagate_carry(bits, start, carry):
     i = start
     while carry > 0 and i < len(bits):
@@ -95,19 +98,16 @@ def propagate_carry(bits, start, carry):
 
 
 
-def sos(ap,bp,n, w=1):
-    k, r, np = PrepareMontgomery(n)
+def sos(ap_bin,bp_bin,n, w=1):
+    k, _, np = PrepareMontgomery(n)
     np = bin(np)[2:]
     n_bin = bin(n)[2:]
     #convert a and b to binary
-    a_bin = bin(ap)[2:]
-    b_bin = bin(bp)[2:]
-    s = max(len(a_bin), len(b_bin))
-    print(a_bin,b_bin)
+    s = k // w
+    print(ap_bin,bp_bin)
     #make sure that they are both exact length
-    a_bin = a_bin.zfill(s)
-    b_bin = b_bin.zfill(s)
-    print(a_bin,b_bin)
+
+    print(ap_bin,bp_bin)
 
     #initialize t to 0
     t = [0]*(2*s+1)
@@ -117,9 +117,9 @@ def sos(ap,bp,n, w=1):
     for i in range(s):
         carry =  0
         for j in range (s):
-            print(t[-1-(i+j)],a_bin[-1-j],b_bin[-1-i],carry)
-            carry,sum = addc(int(t[-1-(i+j)]) , int(a_bin[-1-j])*int(b_bin[-1-i]) ,carry)
-            print(t[-1-(i+j)],a_bin[-1-j],b_bin[-1-i],carry,sum)
+            print(t[-1-(i+j)],ap_bin[-1-j],bp_bin[-1-i],carry)
+            carry,sum = addc(int(t[-1-(i+j)]) , int(ap_bin[-1-j])*int(bp_bin[-1-i]) ,carry)
+            print(t[-1-(i+j)],ap_bin[-1-j],bp_bin[-1-i],carry,sum)
             t[-1-(i+j)] = sum
         t[-1-(i+s)]=carry
     print(t)

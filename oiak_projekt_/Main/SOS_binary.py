@@ -2,16 +2,7 @@ import Prepare
 import BinaryHelper
 
 # funkcja realizujaca algorytm SOS
-def sos(ap_bin,bp_bin,n, w=1):
-    # przygotowanie zmiennych z konwersja na system binarny
-    k, _, np = Prepare.PrepareMontgomery(n)
-    np = bin(np)[2:]
-    n_bin = bin(n)[2:]
-
-    #obliczenie dlugosci parametrow a i b 
-    s = k // w
-    #print(ap_bin,bp_bin)
-
+def sos(ap_bin,bp_bin,n_bin,np,s, w=1):
     # inicjalizacja t oraz u
     t = [0]*(2*s+1)
     u = t.copy()
@@ -20,12 +11,9 @@ def sos(ap_bin,bp_bin,n, w=1):
     for i in range(s):
         carry =  0
         for j in range (s):
-            #print(t[-1-(i+j)],ap_bin[-1-j],bp_bin[-1-i],carry)
             carry,sum = BinaryHelper.addc(int(t[-1-(i+j)]) , int(ap_bin[-1-j])*int(bp_bin[-1-i]) ,carry)
-            #print(t[-1-(i+j)],ap_bin[-1-j],bp_bin[-1-i],carry,sum)
             t[-1-(i+j)] = sum
         t[-1-(i+s)]=carry
-    #print(t)
   
     # krok 2: obliczenie u = (t + mn)/r
     # krok 2.1: t = t + mn    
@@ -33,18 +21,15 @@ def sos(ap_bin,bp_bin,n, w=1):
         carry = 0
         m = (int(t[-1-i])*int(np[-1])) % (2 ** w)
         for j in range(s):
-            #print(t[-1-(i+j)],m,n_bin[-1-j],carry)
             carry,sum = BinaryHelper.addc(int(t[-1-(i+j)]),int(m)*int(n_bin[-1-j]),carry)
             t[-1-(i+j)] = sum
 
         t = BinaryHelper.propagate_carry(t, i+s, carry)
         
-    #print(t)
 
     # krok 2.2: u = u/r (pomijamy nizsze s bitow)
     for j in range(s+1):
         u[-1-j] = t[-1-(j+s)]
-    #print(u)
         
     # krok 3: odejmowanie w celu redukcji u
     borrow = 0
@@ -65,15 +50,17 @@ def sos(ap_bin,bp_bin,n, w=1):
 def MonExp(a,e,n,w=1):
     k, r, np = Prepare.PrepareMontgomery(n)
     s = k // w
+    np = bin(np)[2:]
     ap = (a * r) % n
     ap = bin(ap)[2:].zfill(s)
     up = (1 * r) % n
     up = bin(up)[2:].zfill(s)
+    n = bin(n)[2:]
     for i in range(k-1, -1, -1):
-        up = sos(up, up, n)
+        up = sos(up, up, n,np,s,w)
         if (e >> i) & 1:
-            up = sos(up, ap, n,)
+            up = sos(up, ap, n,np,s,w)
     tab_1 = [0]*s
     tab_1[-1] = 1
-    u = sos(up, tab_1, n)
+    u = sos(up, tab_1, n,np,s,w)
     return u

@@ -1,8 +1,7 @@
 # modInverse take from internet
-
+x, y = 0, 1
 def gcdExtended(a, b):
- 
-    x, y = 0, 1
+    global x, y
     
  
     # Base Case
@@ -25,7 +24,6 @@ def gcdExtended(a, b):
  
  
 def modInverse(A, M):
-    x, y = 0, 0
  
     g = gcdExtended(A, M)
     if (g != 1):
@@ -52,15 +50,6 @@ def PrepareMontgomery(n):
     return k, r, np
 
 
-def PropagateCarry(t, start, c):
-    for i in range(start,len(t),1):
-        sum,c = addc(int(t[-1-i]),0,int(c))
-        t[-1-i] = sum
-        if c == 0:
-            break
-    return t
-
-
 def MonExp(a,e,n,w=1): # a^e mod n
     k, r, np = PrepareMontgomery(n)
     s = k // w
@@ -69,12 +58,12 @@ def MonExp(a,e,n,w=1): # a^e mod n
     up = (1 * r) % n
     up = bin(up)[2:].zfill(s)
     for i in range(k-1, -1, -1):
-        up = CIOS(up, up, n)
+        up = FIOS(up, up, n)
         if (e >> i) & 1: # if e_i is 1
-            up = CIOS(up, ap, n,)
+            up = FIOS(up, ap, n,)
     tab_1 = [0]*s
     tab_1[-1] = 1
-    u = CIOS(up, tab_1, n)
+    u = FIOS(up, tab_1, n)
     return u
 
 def addc(a,b,c=0):
@@ -100,7 +89,7 @@ def propagate_carry(bits, start, carry):
 
 
 
-def CIOS(ap_bin, bp_bin, n, w=1):
+def FIOS(ap_bin, bp_bin, n, w=1):
     k, _, np = PrepareMontgomery(n)
     np = bin(np)[2:]
     n_bin = bin(n)[2:]
@@ -114,13 +103,18 @@ def CIOS(ap_bin, bp_bin, n, w=1):
     u=t.copy()
 
     for i in range(s):
+        print(t[-1],ap_bin[-1],bp_bin[-1-i])
         carry,sum = addc(int(t[-1]) , int(ap_bin[-1])*int(bp_bin[-1-i]))
-        t = propagate_carry(t, 0, carry)
+        print(t[-1],ap_bin[-1],bp_bin[-1-i],carry,sum)
+
+        t = propagate_carry(t, 1, carry) # ADD(t[1],carry)
         m = (sum*int(np[-1])) % (2 ** w)
         carry,sum = addc(sum, int(m)*int(n_bin[-1]))
 
-        for j in range(s):
+        for j in range(1,s,1):
+            print(t[-1-j],ap_bin[-1-j],bp_bin[-1-i],carry)
             carry,sum = addc(int(t[-1-j]) , int(ap_bin[-1-j])*int(bp_bin[-1-i]) ,carry)
+            print(t[-1-j],ap_bin[-1-j],bp_bin[-1-i],carry,sum)
             t = propagate_carry(t, j+1, carry)
             carry,sum = addc(sum, int(m)*int(n_bin[-1-j]))
             t[-1-(j-1)] = sum
@@ -130,11 +124,15 @@ def CIOS(ap_bin, bp_bin, n, w=1):
         t[-1-s], _ = addc(int(t[-1-(s+1)]), carry)
         t[-1-(s+1)] = 0
 
+    
         for j in range(s+1):
-            t[-1-j] = t[-1-(j)]
-            u[-1-j] = t[-1-(j)]
+            t[-1-j] = t[-1-(j+1)]
+            u[-1-j] = t[-1-(j+1)]
 
-        print(t)
+    print(t)
+
+
+
 
     borrow=0
     for i in range (s):
@@ -175,4 +173,12 @@ def subc(x, y, borrow):
 
 
 if __name__ == "__main__":
-    MonExp(8,4,13)
+    n = 13
+    k, r, np = PrepareMontgomery(n)
+    s = k // 1
+    ap = 10
+    bp = 11
+    ap = bin(ap)[2:].zfill(s)
+    bp = bin(bp)[2:].zfill(s)
+    # print(FIOS(ap,bp,13))
+    print(MonExp(11,4,13))

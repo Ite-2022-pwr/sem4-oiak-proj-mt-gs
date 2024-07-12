@@ -1,5 +1,5 @@
 # mnozenie montgomery'ego
-def MonProNaive(ap, bp, n, r, np):
+def monpronaive(ap, bp, n, r, np):
     t = ap * bp # obliczenie t
     #print ('t = ',t,' = ',ap,' * ',bp)
 

@@ -1,8 +1,10 @@
 # modInverse take from internet
+import time
 
+
+x, y = 0, 1
 def gcdExtended(a, b):
- 
-    x, y = 0, 1
+    global x, y
     
  
     # Base Case
@@ -25,7 +27,6 @@ def gcdExtended(a, b):
  
  
 def modInverse(A, M):
-    x, y = 0, 0
  
     g = gcdExtended(A, M)
     if (g != 1):
@@ -68,13 +69,16 @@ def MonExp(a,e,n,w=1): # a^e mod n
     ap = bin(ap)[2:].zfill(s)
     up = (1 * r) % n
     up = bin(up)[2:].zfill(s)
+    start = time.perf_counter()
     for i in range(k-1, -1, -1):
-        up = CIOS(up, up, n)
+        up = CIOS(up, up, n, np, k, w)
         if (e >> i) & 1: # if e_i is 1
-            up = CIOS(up, ap, n,)
+            up = CIOS(up, ap, n, np, k, w)
     tab_1 = [0]*s
     tab_1[-1] = 1
-    u = CIOS(up, tab_1, n)
+    u = CIOS(up, tab_1, n, np, k, w)
+    end = time.perf_counter()
+    print('Time taken:', end-start)
     return u
 
 def addc(a,b,c=0):
@@ -100,14 +104,13 @@ def propagate_carry(bits, start, carry):
 
 
 
-def CIOS(ap_bin, bp_bin, n, w=1):
-    k, _, np = PrepareMontgomery(n)
+def CIOS(ap_bin, bp_bin, n, np, k, w=1):
     np = bin(np)[2:]
     n_bin = bin(n)[2:]
 
     # Convert a and b to binary
     s = k // w
-    print(ap_bin, bp_bin)
+    #print(ap_bin, bp_bin)
 
     # Initialize t to 0
     t = [0] * (2*s+1)
@@ -116,9 +119,9 @@ def CIOS(ap_bin, bp_bin, n, w=1):
     for i in range(s):
         carry = 0
         for j in range(s):
-            print(t[-1-j],ap_bin[-1-j],bp_bin[-1-i],carry)
+            # print(t[-1-j],ap_bin[-1-j],bp_bin[-1-i],carry)
             carry,sum = addc(int(t[-1-j]) , int(ap_bin[-1-j])*int(bp_bin[-1-i]) ,carry)
-            print(t[-1-j],ap_bin[-1-j],bp_bin[-1-i],carry,sum)
+            # print(t[-1-j],ap_bin[-1-j],bp_bin[-1-i],carry,sum)
             t[-1-j] = sum
         
         carry, sum = addc(int(t[-1-s]),carry)
@@ -126,28 +129,29 @@ def CIOS(ap_bin, bp_bin, n, w=1):
         t[-1-(s+1)] = carry
         carry = 0
 
-        print(t)
+        # print(t)
 
         m = (int(t[-1])*int(np[-1])) % (2 ** w)
 
         for j in range(s):
-            print(t[-1-j],m,n_bin[-1-j],carry)
+            # print(t[-1-j],m,n_bin[-1-j],carry)
             carry, sum = addc(int(t[-1-j]), int(m)*int(n_bin[-1-j]), carry)
             t[-1-j] = sum
 
-        print(t)
+        # print(t)
         
         carry, sum = addc(int(t[-1-s]), carry)
         t[-1-s] = sum
         t[-1-(s+1)] = t[-1-(s+1)] + carry
 
-        print(t)
+        # print(t)
 
+        # Here is shift to the right (that is divison by 2^w)
         for j in range(s+1):
             t[-1-j] = t[-1-(j+1)]
             u[-1-j] = t[-1-(j+1)]
 
-        print(t)
+    # print(t)
 
     borrow=0
     for i in range (s):
@@ -157,8 +161,12 @@ def CIOS(ap_bin, bp_bin, n, w=1):
     t[-1-s] = diff
 
     if borrow == 0:
+        #print(t)
+        #print(u)
         return t
     else:
+        #print(u)
+        #print(t)
         return u
 
 
@@ -188,4 +196,6 @@ def subc(x, y, borrow):
 
 
 if __name__ == "__main__":
-    MonExp(4,8,13)
+    #print(CIOS(ap,bp,13))
+    arr = MonExp(89826653909038252527572912,7811075021494731334942756171,1109342866856314275446606473671) # 7^10 mod 13 = 4
+    print(''.join(map(str,arr)))   # print(MonExp(8,4,13))
